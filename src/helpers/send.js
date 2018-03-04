@@ -1,20 +1,22 @@
 import request from 'request';
 
 function send(query) {
-    return function defineOptions(options) {
+    return function partialOptions(options) {
         const optionsParams = options(query);
-        return new Promise(function requestPromise(resolve, reject) {
-            request(optionsParams, function requestCallback(error, response, body) {
+
+        return new Promise(function sendPromise(resolve, reject) {
+            request(optionsParams, function reqCallback(error, response, body) {
                 if (error) {
-                    reject(error);
+                    /* eslint no-console: "off" */
+                    console.log(error);
+
+                    reject(new Error('service.failure'));
                 } else {
-                    resolve(body)
+                    resolve(body);
                 }
             });
         });
-    }
+    };
 }
 
-export {
-    send
-}
+export { send };

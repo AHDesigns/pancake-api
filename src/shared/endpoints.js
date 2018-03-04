@@ -3,12 +3,12 @@ export function gitGQL(query) {
         method: 'POST',
         uri: 'https://api.github.com/graphql',
         body: {
-            query: `${query}`
+            query: `${query}`,
         },
         headers: {
             'User-Agent': 'Pancake',
-            Authorization: `bearer ${process.env.GITHUB_TOKEN}`
+            Authorization: `bearer ${process.env.GITHUB_TOKEN}`,
         },
-        json: true
-    }
+        json: true,
+    };
 }

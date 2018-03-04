@@ -7,9 +7,9 @@ async function requestLimit(req, res) {
     try {
         const data = await send(limit)(gitGQL);
 
-        res.json(data)
+        res.json(data);
     } catch (err) {
-        res.json({ good: false })
+        res.json({ errors: err.message });
     }
 }
 
