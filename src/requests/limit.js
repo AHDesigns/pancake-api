@@ -1,6 +1,6 @@
 import rp from 'request-promise';
 
-import limitQuery from '../graphql/limit.graphql';
+import { limitQuery } from '../graphql/queries';
 
 var options = {
     method: 'POST',
