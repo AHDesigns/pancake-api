@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import api from './api';
+
+import { githubRouter } from './routers';
 
 const app = express();
 
@@ -8,7 +9,7 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use('/limit', api.githubLimit);
+app.use('/git', githubRouter);
 
 app.all('*', (req, res) => {
     res.json({ page: 'loads' });

@@ -15,7 +15,7 @@ var options = {
     json: true
 };
 
-function limitRequest(req, res) {
+function requestLimit(req, res) {
     return rp(options)
         .then(function (payload) {
             res.json(payload)
@@ -26,4 +26,4 @@ function limitRequest(req, res) {
         });
 }
 
-export default limitRequest;
+export { requestLimit }
