@@ -1,0 +1,12 @@
+query limitQuery {
+    rateLimit(dryRun: true) {
+        cost
+        limit
+        nodeCount
+        remaining
+        resetAt
+    }
+    viewer {
+        login
+    }
+}

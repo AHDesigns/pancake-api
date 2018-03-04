@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import rp from 'request-promise';
 // import  githubLimit  from './api';
+import limitQuery from './graphql/limit.graphql';
 
 const app = express();
 
@@ -9,7 +10,7 @@ var options = {
     method: 'POST',
     uri: 'https://api.github.com/graphql',
     body: {
-        query: 'query { rateLimit(dryRun: true) { cost limit nodeCount remaining resetAt } viewer { login } }'
+        query: `${limitQuery}`
     },
     headers: {
         'User-Agent': 'Request-Promise',
@@ -19,10 +20,8 @@ var options = {
 };
 
 const stuff = (req, res) => rp(options)
-    .then(function (htmlString) {
-        res.json({ good: true })
-        console.log(htmlString);
-        // Process html...
+    .then(function (payload) {
+        res.json(payload)
     })
     .catch(function (err) {
         console.log(err);
