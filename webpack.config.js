@@ -2,9 +2,10 @@ const webpack = require('webpack')
 const path = require('path')
 const nodeExternals = require('webpack-node-externals')
 const StartServerPlugin = require('start-server-webpack-plugin')
+const Dotenv = require('dotenv-webpack');
 
 module.exports = {
-    entry: ['webpack/hot/poll?1000', './index'],
+    entry: ['webpack/hot/poll?1000', './src/index'],
     watch: true,
     mode: 'development',
     devtool: 'sourcemap',
@@ -17,7 +18,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.js?$/,
+                test: /\.-spec.js?$/,
                 use: [
                     {
                         loader: 'babel-loader',
@@ -32,9 +33,7 @@ module.exports = {
             {
                 test: /\.(graphql|gql)$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: 'raw-loader'
-                }
+                loader: 'raw-loader',
             }
         ]
     },
@@ -46,7 +45,11 @@ module.exports = {
         new webpack.DefinePlugin({
             'process.env': { BUILD_TARGET: JSON.stringify('server') }
         }),
-        new webpack.BannerPlugin({ banner: 'require("source-map-support").install();', raw: true, entryOnly: false })
+        new Dotenv(),
+        new webpack.BannerPlugin({
+            banner: 'require("source-map-support").install();',
+            entryOnly: false
+        })
     ],
     output: { path: path.join(__dirname, 'dist'), filename: 'server.js' }
 };
