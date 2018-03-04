@@ -1,12 +1,29 @@
 import rp from 'request-promise';
 
-export default () => rp('http://www.google.com')
-    .then(function (htmlString) {
-        return { good: true }
-        console.log(htmlString);
-        // Process html...
-    })
-    .catch(function (err) {
-        console.log(err);
-        return { good: false }
-    });
+import limitQuery from '../graphql/limit.graphql';
+
+var options = {
+    method: 'POST',
+    uri: 'https://api.github.com/graphql',
+    body: {
+        query: `${limitQuery}`
+    },
+    headers: {
+        'User-Agent': 'Request-Promise',
+        Authorization: `bearer ${process.env.GITHUB_TOKEN}`
+    },
+    json: true
+};
+
+function limitRequest(req, res) {
+    return rp(options)
+        .then(function (payload) {
+            res.json(payload)
+        })
+        .catch(function (err) {
+            console.log(err);
+            res.json({ good: false })
+        });
+}
+
+export default limitRequest;
