@@ -1,29 +1,16 @@
-import rp from 'request-promise';
-
+import rq from 'request-promise';
+import { githubRequestMaker } from '../helpers/githubRequestMaker';
 import { limitQuery } from '../graphql/queries';
 
-var options = {
-    method: 'POST',
-    uri: 'https://api.github.com/graphql',
-    body: {
-        query: `${limitQuery}`
-    },
-    headers: {
-        'User-Agent': 'Request-Promise',
-        Authorization: `bearer ${process.env.GITHUB_TOKEN}`
-    },
-    json: true
-};
 
-function requestLimit(req, res) {
-    return rp(options)
-        .then(function (payload) {
-            res.json(payload)
-        })
-        .catch(function (err) {
-            console.log(err);
-            res.json({ good: false })
-        });
+async function requestLimit(req, res) {
+    try {
+        const data = await rq(githubRequestMaker(limitQuery));
+
+        res.json(data)
+    } catch (err) {
+        res.json({ good: false })
+    }
 }
 
-export { requestLimit }
+export { requestLimit };
