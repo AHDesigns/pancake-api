@@ -1,4 +1,4 @@
-query limitQuery {
+query limit {
     rateLimit(dryRun: true) {
         cost
         limit
