@@ -1,11 +1,11 @@
-import rq from 'request-promise';
-import { githubRequestMaker } from '../helpers/githubRequestMaker';
-import { limitQuery } from '../graphql/queries';
+import { send } from '../helpers/send';
+import { limit } from '../graphql/queries';
+import { gitGQL } from '../shared/endpoints';
 
 
 async function requestLimit(req, res) {
     try {
-        const data = await rq(githubRequestMaker(limitQuery));
+        const data = await send(limit)(gitGQL);
 
         res.json(data)
     } catch (err) {

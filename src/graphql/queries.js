@@ -1,5 +1,5 @@
-import limitQuery from './queries/limit.graphql';
+import limit from './queries/limit.graphql';
 
 export {
-    limitQuery
+    limit
 }

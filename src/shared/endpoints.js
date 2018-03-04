@@ -1,6 +1,4 @@
-import requestPromise from 'request-promise';
-
-function githubRequestMaker(query) {
+export function gitGQL(query) {
     return {
         method: 'POST',
         uri: 'https://api.github.com/graphql',
@@ -13,8 +11,4 @@ function githubRequestMaker(query) {
         },
         json: true
     }
-}
-
-export {
-    githubRequestMaker
 }
