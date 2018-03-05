@@ -1,4 +1,4 @@
-export function gitGQL({ operationName = '', query, variables = '{}' }) {
+export function gitGQL({ query, variables = '{}' }) {
     return {
         method: 'POST',
         uri: 'https://api.github.com/graphql',

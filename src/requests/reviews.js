@@ -4,7 +4,6 @@ import { gitGQL } from '../shared/endpoints';
 
 
 async function requestReviews(req, res) {
-    console.log(reviews);
     const variables = {
         name: 'skyport-graphql',
         owner: 'sky-uk',
