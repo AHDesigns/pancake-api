@@ -1,7 +1,6 @@
 function splitSource(source) {
     const arrayOfLines = source.match(/[^\r\n]+/g);
 
-
     const imports = arrayOfLines.filter(line => line[0] === '#');
     const query = arrayOfLines.filter(line => line[0] !== '#');
 
