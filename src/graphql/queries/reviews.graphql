@@ -1,0 +1,28 @@
+query reviews($name: String!, $owner: String!, $prs: Int = 5, $revs: Int = 5) {
+    repository(name: $name, owner: $owner) {
+        name
+        pullRequests(first: $prs, states: [OPEN]) {
+            totalCount
+            nodes {
+                changedFiles
+                deletions
+                additions
+                reviews(first: $revs) {
+                    totalCount
+                    nodes {
+                        author {
+                            login
+                        }
+                        createdAt
+                        state
+                    }
+                }
+                updatedAt
+                url
+                author {
+                    login
+                }
+            }
+        }
+    }
+}
