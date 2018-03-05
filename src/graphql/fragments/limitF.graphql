@@ -1,0 +1,8 @@
+fragment limitDetails on Query {
+    rateLimit {
+        cost
+        nodeCount
+        remaining
+        resetAt
+    }
+}

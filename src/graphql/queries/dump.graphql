@@ -1,0 +1,65 @@
+
+query limit {
+    rateLimit {
+        cost
+        limit
+        nodeCount
+        remaining
+        resetAt
+    }
+}
+query repoByName {
+    repository(owner: "AHDesigns", name: "pancake") {
+        createdAt
+    }
+}
+
+query myRepos {
+    viewer {
+        repositories(first: 2) {
+            totalCount
+            edges {
+                node {
+                    id
+                    name
+                }
+            }
+        }
+    }
+}
+
+query skyPort {
+    rateLimit {
+        cost
+        nodeCount
+        remaining
+    }
+    repository(name: "sky-pages", owner: "sky-uk") {
+        name
+        pullRequests(last: 5, states: [OPEN]) {
+            totalCount
+            nodes {
+                changedFiles
+                deletions
+                additions
+                # comments
+                reviews(first: 10) {
+                    totalCount
+                    nodes {
+                        author {
+                            login
+                        }
+                        createdAt
+                        state
+                    }
+                }
+                updatedAt
+                url
+                author {
+                    login
+                }
+            }
+        }
+    }
+}
+# repository(name: "skyport-graphql", owner: "sky-uk") {
