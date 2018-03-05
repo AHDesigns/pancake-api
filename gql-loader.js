@@ -25,7 +25,9 @@ module.exports = function doshit(source) {
     const [imports, query] = splitSource(source);
     const expandedImports = expandImports(imports);
 
-    const queryString = query.join();
+    const queryString = query.join('')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
 
     const wholeThing = `${expandedImports} module.exports = \`\${frags} ${queryString}\``;
     return wholeThing;

@@ -1,9 +1,10 @@
-export function gitGQL(query) {
+export function gitGQL({ operationName = '', query, variables = '{}' }) {
     return {
         method: 'POST',
         uri: 'https://api.github.com/graphql',
         body: {
             query,
+            variables,
         },
         headers: {
             'User-Agent': 'Pancake',
