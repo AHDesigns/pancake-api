@@ -3,7 +3,7 @@ export function gitGQL(query) {
         method: 'POST',
         uri: 'https://api.github.com/graphql',
         body: {
-            query: `${query}`,
+            query,
         },
         headers: {
             'User-Agent': 'Pancake',

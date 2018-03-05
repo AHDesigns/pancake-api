@@ -1,12 +1,7 @@
+# import '../fragments/limitF.graphql'
+# import '../fragments/limitP.graphql'
+
 query limit {
-    rateLimit(dryRun: true) {
-        cost
-        limit
-        nodeCount
-        remaining
-        resetAt
-    }
-    viewer {
-        login
-    }
+    ...limitDetails
+    ...whoAmI
 }

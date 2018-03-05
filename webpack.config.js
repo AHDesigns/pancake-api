@@ -33,7 +33,8 @@ module.exports = {
             {
                 test: /\.(graphql|gql)$/,
                 exclude: /node_modules/,
-                loader: 'raw-loader',
+                // loader: 'raw-loader',
+                loader: path.resolve('./gql-loader.js'),
             },
         ],
     },
