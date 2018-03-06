@@ -2,12 +2,10 @@ import request from 'request';
 
 function send(query, variables) {
     return function partialOptions(options) {
-        console.log('input: ', variables);
         const optionsParams = options({
             query,
             variables,
         });
-        console.log(optionsParams.body);
 
         return new Promise(function sendPromise(resolve, reject) {
             request(optionsParams, function reqCallback(error, response, body) {
