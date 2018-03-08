@@ -1,6 +1,7 @@
 import { send } from '../helpers/send';
 import { reviewsQuery } from '../graphql/queries';
 import { gitGQL } from '../shared/endpoints';
+import { reverse } from 'dns';
 
 const reviewStates = {
     PENDING: 'PENDING',
@@ -14,14 +15,10 @@ function usersLatestReview(latestReview, review) {
     return latestReview.createdAt > review.createdAt ? latestReview : review;
 }
 
-function calcReviewState({ nodes: rawReviews = [] }) {
-    if (rawReviews.length === 0) {
-        return reviewStates.PENDING;
-    }
-
+function groupReviewsByUser(reviews) {
     const reviewsByUser = {};
 
-    rawReviews.forEach((review) => {
+    reviews.forEach((review) => {
         if ([reviewStates.APPROVED, reviewStates.CHANGES_REQUESTED].includes(review.state)) {
             const user = review.author.login;
             const formatedReview = { createdAt: Date.parse(review.createdAt), state: review.state };
@@ -34,60 +31,62 @@ function calcReviewState({ nodes: rawReviews = [] }) {
         }
     });
 
-    if (Object.keys(reviewsByUser).length === 0) {
-        return reviewStates.PENDING;
+    return Object.entries(reviewsByUser);
+}
+
+function deriveReviewStateFromReviews(state, review) {
+    if (state === reviewStates.CHANGES_REQUESTED) {
+        return state;
     }
 
-    const reviewSummary = Object.entries(reviewsByUser).map(([author, reviews]) => {
+    if (review.state === reviewStates.CHANGES_REQUESTED) {
+        return reviewStates.CHANGES_REQUESTED;
+    }
+
+    return reviewStates.APPROVED;
+}
+
+function calcReviewState( rawReviews ) {
+    const allReviewsGroupedByUser = groupReviewsByUser(rawReviews);
+
+    const reviewSummary = allReviewsGroupedByUser.map(([author, reviews]) => {
         const { state } = reviews.reduce(usersLatestReview, {});
 
         return { author, state };
     });
 
-    const reviewState = reviewSummary.reduce((state, review) => {
-        if (state === reviewStates.CHANGES_REQUESTED) {
-            return state;
-        }
-
-        if (review.state === reviewStates.CHANGES_REQUESTED) {
-            return reviewStates.CHANGES_REQUESTED;
-        }
-
-        return reviewStates.APPROVED;
-    }, '');
+    const reviewState = reviewSummary.reduce(deriveReviewStateFromReviews, reviewStates.PENDIING);
 
     return { summary: reviewSummary, state: reviewState };
 }
 
-async function requestReviews(req, res) {
-    const variables = {
-        name: 'skyport-graphql',
-        owner: 'sky-uk',
+const variables = {
+    name: 'skyport-graphql',
+    owner: 'sky-uk',
+};
+
+
+function transformPrs(pr) {
+    return {
+        title: pr.title,
+        author: pr.author.login,
+        reviews: calcReviewState(pr.reviews)
     };
+}
 
-    try {
-        const data = await send(reviewsQuery, variables)(gitGQL);
-        const {
-            data: {
-                repository: {
-                    name,
-                    pullRequests,
-                },
-            },
-        } = data;
+async function requestReviews(req, res) {
+    return send(reviewsQuery, variables)(gitGQL)
+        .then(({ data: { repository } }) => {
+            const prs = dig('repository', 'pullRequests', 'node', repository);
 
-        const prs = pullRequests.nodes.map(pr => (
-            {
-                title: pr.title,
-                author: pr.author.login,
-                reviews: calcReviewState(pr.reviews),
-            }
-        ));
-
-        res.json({ name, prs });
-    } catch (err) {
-        res.json({ errors: err.message });
-    }
+            res.json({
+                name : String = repository.name,
+                pullRequests : PullRequestSummary = transformPrs(prs)
+            });
+        })
+        .catch((err) => {
+            res.json({ errors: err.message });
+        });
 }
 
 export { requestReviews };
