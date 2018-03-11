@@ -1,7 +1,6 @@
 import { send } from '../helpers/send';
 import { reviewsQuery } from '../graphql/queries';
 import { gitGQL } from '../shared/endpoints';
-import { reverse } from 'dns';
 
 const reviewStates = {
     PENDING: 'PENDING',
@@ -11,30 +10,26 @@ const reviewStates = {
     DISMISSED: 'DISMISSED',
 };
 
-function usersLatestReview(latestReview, review) {
-    return latestReview.createdAt > review.createdAt ? latestReview : review;
-}
+// move this out of file
+const variables = {
+    name: 'skyport-graphql',
+    owner: 'sky-uk',
+};
+// -------------------
 
-function groupReviewsByUser(reviews) {
-    const reviewsByUser = {};
+function getLatestReviewStates(reviews) {
+    return reviews.reduceRight((allReviews, { state, author: { login: reviewer } }) => {
+        const hasAlreadyReviewed = allReviews
+            .find(({ reviewer: currentReviewer }) => currentReviewer === reviewer);
 
-    reviews.forEach((review) => {
-        if ([reviewStates.APPROVED, reviewStates.CHANGES_REQUESTED].includes(review.state)) {
-            const user = review.author.login;
-            const formatedReview = { createdAt: Date.parse(review.createdAt), state: review.state };
-
-            if (reviewsByUser[user]) {
-                reviewsByUser[user].push(formatedReview);
-            } else {
-                reviewsByUser[user] = [formatedReview];
-            }
+        if (!hasAlreadyReviewed) {
+            allReviews.push({ reviewer, state });
         }
-    });
-
-    return Object.entries(reviewsByUser);
+        return allReviews;
+    }, []);
 }
 
-function deriveReviewStateFromReviews(state, review) {
+function reviewStateFromReviews(state, review) {
     if (state === reviewStates.CHANGES_REQUESTED) {
         return state;
     }
@@ -46,42 +41,33 @@ function deriveReviewStateFromReviews(state, review) {
     return reviewStates.APPROVED;
 }
 
-function calcReviewState( rawReviews ) {
-    const allReviewsGroupedByUser = groupReviewsByUser(rawReviews);
+function calcReviewState(rawReviews) {
+    const latestReviewStates = getLatestReviewStates(rawReviews);
 
-    const reviewSummary = allReviewsGroupedByUser.map(([author, reviews]) => {
-        const { state } = reviews.reduce(usersLatestReview, {});
+    const reviewState = latestReviewStates.reduce(reviewStateFromReviews, reviewStates.PENDIING);
 
-        return { author, state };
-    });
-
-    const reviewState = reviewSummary.reduce(deriveReviewStateFromReviews, reviewStates.PENDIING);
-
-    return { summary: reviewSummary, state: reviewState };
+    return { reviews: latestReviewStates, state: reviewState };
 }
 
-const variables = {
-    name: 'skyport-graphql',
-    owner: 'sky-uk',
-};
-
-
-function transformPrs(pr) {
-    return {
-        title: pr.title,
-        author: pr.author.login,
-        reviews: calcReviewState(pr.reviews)
-    };
+function transformPrs(prs) {
+    return prs.map(pr => (
+        {
+            title: pr.title,
+            author: pr.author.login,
+            reviews: calcReviewState(pr.reviews.nodes),
+        }
+    ));
 }
+
 
 async function requestReviews(req, res) {
     return send(reviewsQuery, variables)(gitGQL)
         .then(({ data: { repository } }) => {
-            const prs = dig('repository', 'pullRequests', 'node', repository);
+            const { pullRequests: { nodes: prs } } = repository;
 
             res.json({
-                name : String = repository.name,
-                pullRequests : PullRequestSummary = transformPrs(prs)
+                name: repository.name,
+                pullRequests: transformPrs(prs),
             });
         })
         .catch((err) => {
