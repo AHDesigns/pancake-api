@@ -1,5 +1,5 @@
 fragment reviews on PullRequest {
-    reviews(first: $reviewsCount) {
+    reviews(first: $reviewsCount, states: [CHANGES_REQUESTED, APPROVED]) {
         nodes {
             author {
                 login
