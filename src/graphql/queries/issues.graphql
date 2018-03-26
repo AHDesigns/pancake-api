@@ -1,5 +1,5 @@
-query issues {
-    repository(name: "pancake", owner: "AHDesigns") {
+query issues ($name: String!, $owner: String!) {
+    repository(name: $name, owner: $owner) {
         issues (first: 10, states: OPEN) {
             nodes {
                 title
@@ -7,7 +7,7 @@ query issues {
                     login
                     avatarUrl
                 }
-                labels(first: 10) {
+                labels(first: 5) {
                     nodes {
                         name
                         color

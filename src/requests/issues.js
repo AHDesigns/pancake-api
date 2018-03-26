@@ -2,6 +2,12 @@ import { send } from '../helpers/send';
 import { issuesQuery } from '../graphql/queries';
 import { gitGQL } from '../shared/endpoints';
 
+// move this out of file
+const variables = {
+    name: 'skyport-graphql',
+    owner: 'sky-uk',
+};
+// -------------------
 
 function seperateByColumn(issues) {
     const issueByColumn = {};
@@ -22,7 +28,7 @@ function seperateByColumn(issues) {
 
 async function requestIssues(req, res) {
     try {
-        const data = await send(issuesQuery)(gitGQL);
+        const data = await send(issuesQuery, variables)(gitGQL);
         res.json(seperateByColumn(data.data.repository.issues.nodes));
     } catch (err) {
         res.json({ errors: err.message });
