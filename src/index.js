@@ -6,7 +6,7 @@ const server = http.createServer(app);
 let currentApp = app;
 
 /* eslint no-console: "off" */
-server.listen(3000, () => { console.log('\nListening on 3000'); });
+server.listen(2000, () => { console.log('\nListening on 3000'); });
 
 if (module.hot) {
     module.hot.accept(['./server'], () => {

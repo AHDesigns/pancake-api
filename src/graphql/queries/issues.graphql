@@ -1,0 +1,19 @@
+query issues ($name: String!, $owner: String!) {
+    repository(name: $name, owner: $owner) {
+        issues (first: 10, states: OPEN) {
+            nodes {
+                title
+                author {
+                    login
+                    avatarUrl
+                }
+                labels(first: 5) {
+                    nodes {
+                        name
+                        color
+                    }
+                }
+            }
+        }
+    }
+}
