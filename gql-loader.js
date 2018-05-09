@@ -29,5 +29,6 @@ module.exports = function doshit(source) {
         .replace(/\u2029/g, '\\u2029');
 
     const wholeThing = `${expandedImports} module.exports = \`\${frags} ${queryString}\``;
+    console.log('\n',wholeThing);
     return wholeThing;
 };

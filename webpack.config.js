@@ -35,6 +35,7 @@ module.exports = {
                 exclude: /node_modules/,
                 // loader: 'raw-loader',
                 loader: path.resolve('./gql-loader.js'),
+                // loader: 'graphql-tag/loader',
             },
         ],
     },

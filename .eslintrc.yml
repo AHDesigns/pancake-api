@@ -4,4 +4,3 @@ parser: 'babel-eslint'
 rules:
     indent: ["error", 4]
     import/prefer-default-export: ["off"]
-    prefer-arrow-callback: ["off"]

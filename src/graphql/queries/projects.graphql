@@ -1,0 +1,21 @@
+query issueProjectQuery ($name: String!, $owner: String!, $count: Int = 10, $labels: [String!]) {
+    repository(name: $name, owner: $owner) {
+        name
+        issues (states: OPEN, first: $count, labels: $labels) {
+            totalCount
+            nodes {
+                projectCards (first: 2) {
+                    nodes {
+                        id
+                        column {
+                            name
+                        }
+                        project {
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
