@@ -4,7 +4,9 @@ import { gitGQL } from '../shared/endpoints';
 
 
 async function requestLimit(req, res) {
+    console.log('hitting limit');
     try {
+        console.log(limit);
         const data = await send(limit)(gitGQL);
 
         res.json(data);
