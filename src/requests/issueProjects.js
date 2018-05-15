@@ -11,11 +11,8 @@ const moveTo = 'MDEzOlByb2plY3RDb2x1bW4yNTY2MTA3';
 const isInColumn = ({ column: { name } }) => name === chosenColumn;
 const isInBoard = ({ project: { name } }) => name === chosenBoard;
 
-const issueIsReady = issue => issue.projectCards.nodes.some(isInColumn);
-const issueIsInBoard = issue => issue.projectCards.nodes.some(isInBoard);
-
-const findCardsInColumn = issues => issues.filter(issueIsReady);
-const findCardsInProject = issues => issues.filter(issueIsInBoard);
+const filter = issues => cardLocation => issues.filter(issue =>
+    issue.projectCards.nodes.some(cardLocation));
 
 const desiredCardDetails = issue => ({
     issueId: issue.id,
@@ -64,15 +61,11 @@ export async function requestIssueProjects({ query }, res) {
     try {
         const issues = await getAllIssues(queryVariables);
 
-        const cardsToMove = queryVariables.labels
-            ? findCardsInProject(issues).map(desiredCardDetails)
-            : findCardsInColumn(issues).map(desiredCardDetails);
+        const byLocation = queryVariables.labels ? isInBoard : isInColumn;
+        const cardsToMove = filter(issues)(byLocation).map(desiredCardDetails);
 
         // res.json(cardsToMove);
-
-        cardsToMove.length
-            ? res.json(await moveCard(cardsToMove))
-            : res.json({ data: 'no cards found to move' });
+        res.json(cardsToMove.length ? await moveCard(cardsToMove) : { data: 'no cards found to move' });
     } catch (err) {
         res.json({ errors: err.message });
     }
