@@ -4,7 +4,7 @@ import app from './server';
 
 const server = http.createServer(app);
 let currentApp = app;
-const port = 2001;
+const port = 6371;
 
 /* eslint no-console: "off" */
 server.listen(port, () => { console.log(`\nListening on ${port}`); });

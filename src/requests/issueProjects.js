@@ -3,27 +3,28 @@ import { issueProjectsQuery } from '../graphql/queries';
 import moveCardMutation from '../graphql/mutations/moveCard.graphql';
 import { gitGQL } from '../shared/endpoints';
 
-// move this out of file
-const variables = {
-    name: 'skymobile-service',
-    owner: 'sky-uk',
-    // labels: ['chuftey'],
-    count: 100,
-};
-// -------------------
-
-const chosenColumn = '🚀';
-const isInColumn = ({ column: { name } }) => name === chosenColumn;
+// utils
+let chosenColumn;
+let chosenBoard;
 const moveTo = 'MDEzOlByb2plY3RDb2x1bW4yNTY2MTA3';
 
-const issueIsReady = issue => issue.projectCards.nodes
-    .some(isInColumn);
+const isInColumn = ({ column: { name } }) => name === chosenColumn;
+const isInBoard = ({ project: { name } }) => name === chosenBoard;
 
-const findCardsToMove = issues => issues.filter(issueIsReady);
+const issueIsReady = issue => issue.projectCards.nodes.some(isInColumn);
+const issueIsInBoard = issue => issue.projectCards.nodes.some(isInBoard);
 
-const getAllIssues = async (issues = [], after) => {
+const findCardsInColumn = issues => issues.filter(issueIsReady);
+const findCardsInProject = issues => issues.filter(issueIsInBoard);
+
+const desiredCardDetails = issue => ({
+    issueId: issue.id,
+    cardId: issue.projectCards.nodes.find(isInColumn).id,
+});
+
+const getAllIssues = async (queryVariables, issues = [], after) => {
     const issueVars = {
-        ...variables,
+        ...queryVariables,
         after, // defaults to undefined and starts at 0
     };
 
@@ -31,11 +32,9 @@ const getAllIssues = async (issues = [], after) => {
     const { totalCount, pageInfo: { endCursor }, nodes } = data.repository.issues;
     const totalIssues = issues.concat(nodes);
 
-    if (totalCount !== totalIssues.length) {
-        return getAllIssues(totalIssues, endCursor);
-    }
-
-    return totalIssues;
+    return totalCount === totalIssues.length
+        ? totalIssues
+        : getAllIssues(queryVariables, totalIssues, endCursor);
 };
 
 const moveCard = async ([card, ...cards], responses = []) => {
@@ -51,22 +50,29 @@ const moveCard = async ([card, ...cards], responses = []) => {
     return moveCard(cards, responses.concat(response));
 };
 
-export async function requestIssueProjects(req, res) {
+export async function requestIssueProjects({ query }, res) {
+    chosenColumn = query.moveFromColumn || '🚀';// bit hacky
+    chosenBoard = query.moveFromBoard || 'Backlog';
+
+    const queryVariables = {
+        labels: query.labels && query.labels.split(','),
+        name: 'skymobile-service',
+        owner: 'sky-uk',
+        count: 100,
+    };
+
     try {
-        const issues = await getAllIssues();
+        const issues = await getAllIssues(queryVariables);
 
-        const cardsToMove = findCardsToMove(issues)
-            .map(issue => ({
-                issueId: issue.id,
-                cardId: issue.projectCards.nodes.find(isInColumn).id,
-            }));
+        const cardsToMove = queryVariables.labels
+            ? findCardsInProject(issues).map(desiredCardDetails)
+            : findCardsInColumn(issues).map(desiredCardDetails);
 
-        if (!cardsToMove) {
-            res.send({ data: 'no cards found to move' });
-        } else {
-            const responses = await moveCard(cardsToMove);
-            res.send(responses);
-        }
+        // res.json(cardsToMove);
+
+        cardsToMove.length
+            ? res.json(await moveCard(cardsToMove))
+            : res.json({ data: 'no cards found to move' });
     } catch (err) {
         res.json({ errors: err.message });
     }
