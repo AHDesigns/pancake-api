@@ -2,6 +2,12 @@ import request from 'request';
 
 function send(query, variables) {
     return function partialOptions(options) {
+        // console.log(`sending query
+        // ${query}
+        // with vars:
+        // ${variables}
+        // `);
+
         const optionsParams = options({
             query,
             variables,

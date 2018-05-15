@@ -62,4 +62,64 @@ query skyPort {
         }
     }
 }
-# repository(name: "skyport-graphql", owner: "sky-uk") {
+
+query GetIssueProjects {
+    repository(owner: "sky-uk", name: "skymobile-service") {
+        proj1: project (number: 3) {
+            name
+            columns(first:5) {
+                nodes {
+                    name
+                    id
+                }
+            }
+        }
+        proj2: project (number: 4) {
+            name
+            columns(last:1) {
+                nodes {
+                    name
+                    id
+                }
+            }
+        }
+    }
+}
+
+query GetIssues ($count: Int = 100, $labels: [String!]) {
+    repository(owner: "sky-uk", name: "skymobile-service") {
+        name
+        issues (states: OPEN, first: $count, labels: $labels) {
+            totalCount
+            pageInfo {
+                endCursor
+            }
+            nodes {
+                title
+                id
+                projectCards (first: 2) {
+                    nodes {
+                        id
+                        column {
+                            id
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation moveCard($deliveryId: ID!, $issueId: ID!, $cardId: ID!) {
+    addProjectCard( input: { projectColumnId: $deliveryId, contentId: $issueId } ) {
+        projectColumn {
+            name
+        }
+    }
+    deleteProjectCard( input: { cardId: $cardId } ) {
+        column {
+            name
+        }
+    }
+}
