@@ -59,19 +59,15 @@ function transformPrs(prs) {
     ));
 }
 
-async function requestReviews(req, res) {
-    return send(reviewsQuery, variables)(gitGQL)
-        .then(({ data: { repository } }) => {
-            const { pullRequests: { nodes: prs } } = repository;
+export default async (req, res) => send(reviewsQuery, variables)(gitGQL)
+    .then(({ data: { repository } }) => {
+        const { pullRequests: { nodes: prs } } = repository;
 
-            res.json({
-                name: repository.name,
-                pullRequests: transformPrs(prs),
-            });
-        })
-        .catch((err) => {
-            res.json({ errors: err.message });
+        res.json({
+            name: repository.name,
+            pullRequests: transformPrs(prs),
         });
-}
-
-export { requestReviews };
+    })
+    .catch((err) => {
+        res.json({ errors: err.message });
+    });

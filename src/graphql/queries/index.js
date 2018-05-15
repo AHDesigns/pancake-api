@@ -1,11 +1,4 @@
-import limit from './limit.graphql';
-import reviewsQuery from './reviews.graphql';
-import issuesQuery from './issues.graphql';
-import issueProjectsQuery from './issueProjects.graphql';
-
-export {
-    limit,
-    reviewsQuery,
-    issuesQuery,
-    issueProjectsQuery,
-};
+export { default as limit } from './limit.graphql';
+export { default as reviewsQuery } from './reviews.graphql';
+export { default as issuesQuery } from './issues.graphql';
+export { default as issueProjectsQuery } from './issueProjects.graphql';

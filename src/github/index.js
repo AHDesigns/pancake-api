@@ -1,10 +1,9 @@
 import express from 'express';
-import {
-    requestLimit,
-    requestReviews,
-    requestIssues,
-    requestIssueProjects,
-} from '../requests';
+
+import requestLimit from './limit';
+import requestReviews from './reviews';
+import requestIssues from './issues';
+import requestIssueProjects from './issueProjects';
 
 export const githubRouter = express.Router();
 

@@ -1,11 +1,11 @@
 mutation moveCard($projectColumnId: ID!, $issueId: ID!, $cardId: ID!) {
     addProjectCard( input: { projectColumnId: $projectColumnId, contentId: $issueId } ) {
-        projectColumn {
+        addedToDelivery: projectColumn {
             name
         }
     }
     deleteProjectCard( input: { cardId: $cardId } ) {
-        column {
+        removedFromColumn: column {
             name
         }
     }

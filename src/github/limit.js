@@ -3,7 +3,7 @@ import { limit } from '../graphql/queries';
 import { gitGQL } from '../shared/endpoints';
 
 
-async function requestLimit(req, res) {
+export default async (req, res) => {
     console.log('hitting limit');
     try {
         console.log(limit);
@@ -13,6 +13,4 @@ async function requestLimit(req, res) {
     } catch (err) {
         res.json({ errors: err.message });
     }
-}
-
-export { requestLimit };
+};

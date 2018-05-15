@@ -26,13 +26,11 @@ function seperateByColumn(issues) {
     return issueByColumn;
 }
 
-async function requestIssues(req, res) {
+export default async (req, res) => {
     try {
         const data = await send(issuesQuery, variables)(gitGQL);
         res.json(seperateByColumn(data.data.repository.issues.nodes));
     } catch (err) {
         res.json({ errors: err.message });
     }
-}
-
-export { requestIssues };
+};
