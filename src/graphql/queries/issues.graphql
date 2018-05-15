@@ -1,16 +1,20 @@
-query issues ($name: String!, $owner: String!) {
+query issues ($name: String!, $owner: String!, $count: Int = 100, $labels: [String!]) {
     repository(name: $name, owner: $owner) {
-        issues (first: 10, states: OPEN) {
+        issues (states: OPEN, first: $count, labels: $labels) {
+            totalCount
+            pageInfo {
+                endCursor
+            }
             nodes {
                 title
-                author {
-                    login
-                    avatarUrl
-                }
-                labels(first: 5) {
+                id
+                projectCards (first: 2) {
                     nodes {
-                        name
-                        color
+                        id
+                        column {
+                            id
+                            name
+                        }
                     }
                 }
             }
