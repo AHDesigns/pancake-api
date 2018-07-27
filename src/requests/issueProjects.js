@@ -6,7 +6,8 @@ import { gitGQL } from '../shared/endpoints';
 // utils
 let chosenColumn;
 let chosenBoard;
-const moveTo = 'MDEzOlByb2plY3RDb2x1bW4yNTY2MTA3';
+const moveTo = 'MDEzOlByb2plY3RDb2x1bW4yNTY2MTA3'; // delivery board
+// const removeFrom = 'MDEzOlByb2plY3RDb2x1bW4yNjkxNTg1'; // backlog
 
 const isInColumn = ({ column: { name } }) => name === chosenColumn;
 const isInBoard = ({ project: { name } }) => name === chosenBoard;
@@ -64,7 +65,6 @@ export async function requestIssueProjects({ query }, res) {
         const byLocation = queryVariables.labels ? isInBoard : isInColumn;
         const cardsToMove = filter(issues)(byLocation).map(desiredCardDetails);
 
-        // res.json(cardsToMove);
         res.json(cardsToMove.length ? await moveCard(cardsToMove) : { data: 'no cards found to move' });
     } catch (err) {
         res.json({ errors: err.message });

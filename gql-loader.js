@@ -28,7 +28,5 @@ module.exports = function doshit(source) {
         .replace(/\u2028/g, '\\u2028')
         .replace(/\u2029/g, '\\u2029');
 
-    const wholeThing = `${expandedImports} module.exports = \`\${frags} ${queryString}\``;
-    console.log('\n',wholeThing);
-    return wholeThing;
+    return `${expandedImports} module.exports = \`\${frags} ${queryString}\``;
 };
