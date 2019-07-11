@@ -1,31 +1,14 @@
-import request from 'request';
+const request = require('request');
+const log = require('./logger');
 
-function send(query, variables) {
-    return function partialOptions(options) {
-        // console.log(`sending query
-        // ${query}
-        // with vars:
-        // ${variables}
-        // `);
-
-        const optionsParams = options({
-            query,
-            variables,
-        });
-
-        return new Promise(function sendPromise(resolve, reject) {
-            request(optionsParams, function reqCallback(error, response, body) {
-                if (error) {
-                    /* eslint no-console: "off" */
-                    console.log(error);
-
-                    reject(new Error('service.failure'));
-                } else {
-                    resolve(body);
-                }
-            });
-        });
-    };
-}
-
-export { send };
+module.exports = ({ options, loggable }) => new Promise((resolve, reject) => {
+    log.info(loggable);
+    request(options, (error, response, body) => {
+        if (error) {
+            log.error(error);
+            reject(new Error('service.failure'));
+        } else {
+            resolve(body);
+        }
+    });
+});

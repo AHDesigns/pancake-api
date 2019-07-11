@@ -1,7 +1,0 @@
-# import '../fragments/limitF.graphql'
-# import '../fragments/limitP.graphql'
-
-query limit {
-    ...limitDetails
-    ...whoAmI
-}

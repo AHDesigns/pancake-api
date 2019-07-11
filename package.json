@@ -2,10 +2,9 @@
   "name": "pancake",
   "version": "1.0.0",
   "description": "Like waffle but tastier",
-  "main": "index.js",
   "scripts": {
-    "start": "webpack --colors --progress",
-    "test": "echo \"no tests\""
+    "start": "nodemon src/server.js",
+    "test": ""
   },
   "author": "",
   "license": "ISC",
@@ -20,20 +19,12 @@
     "eslint-plugin-import": "^2.9.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0",
-    "graphql-tag": "^2.8.0",
-    "raw-loader": "^0.5.1",
-    "source-map-support": "^0.5.3",
-    "start-server-webpack-plugin": "^2.2.1",
-    "webpack": "^4.0.1",
-    "webpack-cli": "^2.0.10",
-    "webpack-node-externals": "^1.6.0"
+    "nodemon": "^1.19.1"
   },
   "dependencies": {
     "body-parser": "^1.18.2",
     "dotenv": "^5.0.1",
-    "dotenv-webpack": "^1.5.5",
-    "express": "^4.16.2",
-    "graphql": "^0.13.2",
+    "express": "^4.17.1",
     "request": "^2.83.0"
   }
 }

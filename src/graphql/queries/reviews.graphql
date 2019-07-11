@@ -1,8 +1,0 @@
-# import '../fragments/pullRequests.graphql'
-
-query reviewsQuery ($name: String!, $owner: String!, $prCount: Int = 5, $reviewsCount: Int = 5) {
-    repository(name: $name, owner: $owner) {
-        name
-        ...pullRequests
-    }
-}

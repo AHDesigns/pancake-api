@@ -3,4 +3,7 @@ const logLevels = {
     PROD: Symbol('PROD'),
 };
 
-export const loggerLevel = logLevels.DEBUG;
+module.exports = {
+    loggerLevel: logLevels.DEBUG,
+    port: process.env.PORT || 6371,
+};

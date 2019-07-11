@@ -1,13 +1,9 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-
-import { githubRouter } from './github';
+require('dotenv').config();
+const express = require('express');
+const { port } = require('./helpers/config');
+const { githubRouter } = require('./github');
 
 const app = express();
-
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 
 app.use('/git', githubRouter);
 
@@ -15,5 +11,14 @@ app.all('*', (req, res) => {
     res.json({ page: 'loads' });
 });
 
-export default app;
+app.use(function (err, req, res, next) {
+    console.error(err);
+    next(err);
+});
+app.use(function (err, req, res, next) {
+    res.status(500).json({
+        error: err.message,
+    });
+});
 
+app.listen(port, () => { console.log('running'); });
