@@ -1,31 +1,29 @@
-import request from 'request';
+const request = require('request');
+const log = require('./logger');
 
-function send(query, variables) {
-    return function partialOptions(options) {
-        // console.log(`sending query
-        // ${query}
-        // with vars:
-        // ${variables}
-        // `);
-
-        const optionsParams = options({
-            query,
-            variables,
-        });
-
-        return new Promise(function sendPromise(resolve, reject) {
-            request(optionsParams, function reqCallback(error, response, body) {
-                if (error) {
-                    /* eslint no-console: "off" */
-                    console.log(error);
-
-                    reject(new Error('service.failure'));
-                } else {
-                    resolve(body);
-                }
+module.exports = ({ options, loggable }) => new Promise((resolve, reject) => {
+    log.debug(options);
+    log.info('request.sending', loggable);
+    request(options, (error, response) => {
+        if (error) {
+            reject(new Error('request.error'));
+        } else {
+            const { body, headers } = response;
+            log.info('request.response', {
+                headers,
+                statusCode: response.statusCode,
             });
-        });
-    };
-}
+            log.debug(body);
 
-export { send };
+            if (response.statusCode === 200) {
+                resolve(body);
+            } else if (response.statusCode === 401) {
+                reject(new Error('request.unauthenticated'));
+            } else if (response.statusCode === 404) {
+                reject(new Error('request.invalid.route'));
+            } else {
+                reject(new Error('request.unknown.error'));
+            }
+        }
+    });
+});

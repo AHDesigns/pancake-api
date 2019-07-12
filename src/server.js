@@ -1,19 +1,31 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-
-import { githubRouter } from './github';
+require('dotenv').config();
+const express = require('express');
+const { port } = require('./helpers/config');
+const reviews = require('./github/reviews');
+const log = require('./helpers/logger');
+const bodyParser = require('body-parser');
 
 const app = express();
 
-
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 
-app.use('/git', githubRouter);
+app.post('/reviews', reviews);
 
 app.all('*', (req, res) => {
-    res.json({ page: 'loads' });
+    log.info('middleware.invalid.route', req.path);
+    res.status(404);
+    res.json({ message: `invalid.route ${req.path}` });
 });
 
-export default app;
+// need four args to identify error middleware 🤷🏽‍♂️
+// eslint-disable-next-line
+app.use((err, req, res, next) => {
+    log.error('middleware.error.log', err.stack);
+    res.status(500).json({ error: err.message });
+});
 
+app.listen(port, () => {
+    log.info('app.start', {
+        port, logLevel: log.level, env: process.env.NODE_ENV,
+    });
+});

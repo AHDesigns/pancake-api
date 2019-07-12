@@ -1,6 +1,0 @@
-fragment whoAmI on Query {
-    viewer {
-        name
-        avatarUrl
-    }
-}
