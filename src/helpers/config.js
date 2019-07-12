@@ -1,9 +1,11 @@
 const logLevels = {
-    DEBUG: Symbol('DEBUG'),
-    PROD: Symbol('PROD'),
+    ERROR: 'ERROR',
+    INFO: 'INFO',
+    VERBOSE: 'VERBOSE',
 };
 
 module.exports = {
-    loggerLevel: logLevels.DEBUG,
+    logLevels,
+    loggerLevel: process.env.LOG_LEVEL || logLevels.INFO,
     port: process.env.PORT || 6371,
 };

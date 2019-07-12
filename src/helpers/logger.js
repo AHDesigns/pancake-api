@@ -1,20 +1,33 @@
-/* eslint no-console: "off" */
-const valid = level => validAt => (validAt >= level ? null : () => { });
+const { logLevels, loggerLevel } = require('./config');
 
-function log(method = '') {
-    const logDetails = console[method];
-    return (message = '') => {
-        logDetails({ [method]: message });
-    };
-}
+const valid = level => validAt => (level >= validAt ? null : () => { });
+
 
 function logger(level) {
-    const useLevel = valid(level);
+    const useLevel = valid(levelMapping[level]);
 
     return {
         error: useLevel(1) || log('error'),
         info: useLevel(2) || log('info'),
+        debug: useLevel(3) || log('debug'),
+        level: loggerLevel,
     };
+
+    function log(method = '') {
+        const logDetails = console[method]; // eslint-disable-line no-console
+        return (message = '', details) => {
+            logDetails(JSON.stringify({
+                [method]: message,
+                details,
+            }));
+        };
+    }
 }
 
-module.exports = logger(process.env.LOG_LEVEL || 0);
+const levelMapping = {
+    [logLevels.ERROR]: 1,
+    [logLevels.INFO]: 2,
+    [logLevels.VERBOSE]: 3,
+};
+
+module.exports = logger(loggerLevel);

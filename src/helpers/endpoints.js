@@ -1,3 +1,5 @@
+const clone = require('./clone');
+
 function gitGQL({ query, variables = '{}' }) {
     const options = {
         method: 'POST',
@@ -15,7 +17,7 @@ function gitGQL({ query, variables = '{}' }) {
 
     return {
         options,
-        loggable: clean(options),
+        loggable: clean(clone(options)),
     };
 
     /* eslint-disable prefer-template */
@@ -23,10 +25,10 @@ function gitGQL({ query, variables = '{}' }) {
         const safe = params;
         safe.headers.Authorization = params.headers.Authorization.replace(/./g, 'x');
         safe.body.variables = Object.entries(safe.body.variables)
-            .reduce((acc, [key, value]) => (acc, key, value) || ({
+            .reduce((acc, [key, value]) => ({
                 ...acc,
                 [key]: (value + '').replace(/./g, 'x'),
-            }), []);
+            }), {});
 
         return safe;
     }

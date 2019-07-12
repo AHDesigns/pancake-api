@@ -1,5 +1,5 @@
 const send = require('../helpers/send');
-const { gitGQL } = require('../shared/endpoints');
+const { gitGQL } = require('../helpers/endpoints');
 const { reviewsQuery } = require('./queries');
 
 const variables = {
@@ -8,9 +8,8 @@ const variables = {
     prCount: 26,
     reviewsCount: 10,
 };
-// -------------------
 
-module.exports = async (req, res, next) => send(gitGQL({ query: reviewsQuery, variables }))
+module.exports = (req, res, next) => send(gitGQL({ query: reviewsQuery, variables }))
     .then(({ data: { repository, rateLimit } }) => {
         const { name, pullRequests: { nodes: prs } } = repository;
 
@@ -27,10 +26,6 @@ module.exports = async (req, res, next) => send(gitGQL({ query: reviewsQuery, va
         });
     })
     .catch(next);
-    // .catch((err) => {
-    //     next(err);
-    //     // res.json({ errors: err.message });
-    // });
 
 const reviewStates = {
     PENDING: 'PENDING',
