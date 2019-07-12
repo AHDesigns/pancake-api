@@ -2,14 +2,10 @@ const send = require('../helpers/send');
 const { gitGQL } = require('../helpers/endpoints');
 const { reviewsQuery } = require('./queries');
 
-const variables = {
-    name: 'skyport-graphql',
-    owner: 'sky-uk',
-    prCount: 26,
-    reviewsCount: 10,
-};
-
-module.exports = (req, res, next) => send(gitGQL({ query: reviewsQuery, variables }))
+module.exports = (req, res, next) => send(gitGQL({
+    query: reviewsQuery,
+    variables: req.body,
+}))
     .then(({ data: { repository, rateLimit } }) => {
         const { name, pullRequests: { nodes: prs } } = repository;
 

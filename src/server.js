@@ -9,10 +9,10 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/reviews', reviews);
+app.post('/reviews', reviews);
 
 app.all('*', (req, res) => {
-    log.info('invalid.route', req.path);
+    log.info('middleware.invalid.route', req.path);
     res.status(404);
     res.json({ message: `invalid.route ${req.path}` });
 });
@@ -20,7 +20,7 @@ app.all('*', (req, res) => {
 // need four args to identify error middleware 🤷🏽‍♂️
 // eslint-disable-next-line
 app.use((err, req, res, next) => {
-    log.error('general.error', err.stack);
+    log.error('middleware.error.log', err.stack);
     res.status(500).json({ error: err.message });
 });
 
