@@ -16,7 +16,13 @@ module.exports = ({ options, loggable }) => new Promise((resolve, reject) => {
             log.debug(body);
 
             if (response.statusCode === 200) {
-                resolve(body);
+                if (body.data) { 
+                    console.log(body)
+                    resolve(body.data)
+                } else {
+                    log.debug(body);
+                    reject(new Error('request.no.body'));
+                }
             } else if (response.statusCode === 401) {
                 reject(new Error('request.unauthenticated'));
             } else if (response.statusCode === 404) {

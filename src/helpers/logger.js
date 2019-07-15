@@ -27,7 +27,7 @@ function logger(level) {
 const levelMapping = {
     [logLevels.ERROR]: 1,
     [logLevels.INFO]: 2,
-    [logLevels.VERBOSE]: 3,
+    [logLevels.DEBUG]: 3,
 };
 
 module.exports = logger(loggerLevel);

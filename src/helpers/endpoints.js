@@ -10,6 +10,8 @@ function gitGQL({ query, variables = '{}' }) {
         },
         headers: {
             'User-Agent': 'Pancake',
+            // isDraft, mergeStateStatus
+            Accept: 'application/vnd.github.shadow-cat-preview+json, application/vnd.github.merge-info-preview+json',
             Authorization: `bearer ${process.env.GITHUB_TOKEN}`,
         },
         json: true,

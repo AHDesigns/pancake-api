@@ -6,7 +6,7 @@ module.exports = (req, res, next) => send(gitGQL({
     query: reviewsQuery,
     variables: req.body,
 }))
-    .then(({ data: { repository, rateLimit } }) => {
+    .then(({ repository, rateLimit }) => {
         const { name, pullRequests: { nodes: prs } } = repository;
 
         res.json({
@@ -14,7 +14,10 @@ module.exports = (req, res, next) => send(gitGQL({
             pullRequests: prs.map(pr => (
                 {
                     title: pr.title,
-                    author: pr.author.login,
+                    isDraft: pr.isDraft,
+                    isFailing: pr.mergeStateStatus !== 'BEHIND',
+                    url: pr.url,
+                    author: pr.author,
                     reviews: calcReviewState(pr.reviews.nodes),
                 }
             )),
@@ -32,34 +35,42 @@ const reviewStates = {
 };
 
 function calcReviewState(rawReviews) {
-    const latestReviewStates = getLatestReviewStates(rawReviews);
+    const uniqueReviews = getLatestReviewStates(rawReviews);
 
-    const reviewState = latestReviewStates.reduce(reviewStateFromReviews, reviewStates.PENDIING);
+    const state = uniqueReviews.reduce(reviewStateFromReviews, reviewStates.PENDIING);
 
-    return { reviews: latestReviewStates, state: reviewState };
+    return { uniqueReviews, state };
 
     function getLatestReviewStates(reviews) {
-        return reviews.reduceRight((allReviews, { state, author: { login: reviewer } }) => {
+        return reviews.reduceRight((allReviews, review) => {
             const hasAlreadyReviewed = allReviews
-                .find(({ reviewer: currentReviewer }) => currentReviewer === reviewer);
+                .find(({ author }) => author.login === review.author.login);
 
             if (!hasAlreadyReviewed) {
-                allReviews.push({ reviewer, state });
+            // TODO: authorAssociation NONE should be removed (as they have left sky)
+                allReviews.push({
+                    ...review,
+                    onBehalfOf: review.onBehalfOf.nodes[0],
+                });
             }
             return allReviews;
         }, []);
+
+        function reviewerTeam({ nodes }) {
+            // TODO: could be on behalf of more than one team but unlikely
+            return nodes[0] && nodes[0].name;
+        }
     }
 
-    function reviewStateFromReviews(state, review) {
-        if (state === reviewStates.CHANGES_REQUESTED) {
-            return state;
+    function reviewStateFromReviews(currState, review) {
+        if (currState === reviewStates.CHANGES_REQUESTED) {
+            return currState;
         }
 
-        if (review.state === reviewStates.CHANGES_REQUESTED) {
+        if (review.currState === reviewStates.CHANGES_REQUESTED) {
             return reviewStates.CHANGES_REQUESTED;
         }
 
         return reviewStates.APPROVED;
     }
 }
-

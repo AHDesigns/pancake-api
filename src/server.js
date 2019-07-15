@@ -1,14 +1,17 @@
 require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 const { port } = require('./helpers/config');
 const reviews = require('./github/reviews');
 const log = require('./helpers/logger');
-const bodyParser = require('body-parser');
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(cors());
 
+// TODO: deal with ddos / greedy clients
 app.post('/reviews', reviews);
 
 app.all('*', (req, res) => {

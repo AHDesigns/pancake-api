@@ -7,6 +7,6 @@ some info
 *things*
 **bold things**
 
-```javscript
+```javascript
 const a = foo(bar);
 ```
