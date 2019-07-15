@@ -1,7 +1,7 @@
 const logLevels = {
     ERROR: 'ERROR',
     INFO: 'INFO',
-    VERBOSE: 'VERBOSE',
+    DEBUG: 'DEBUG',
 };
 
 module.exports = {

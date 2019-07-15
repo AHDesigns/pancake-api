@@ -1,38 +1,70 @@
 const gql = str => str[0].replace(/\n/g, '').replace(/ +/g, ' ');
 
+// TODO: deal with reviewRequests needing variable
+// TODO: deal with onBahalfOf needing variable
 const reviewsQuery = gql`
-query reviewsQuery ($name: String!, $owner: String!, $prCount: Int = 5, $reviewsCount: Int = 5) {
-    rateLimit {
-        limit
-        cost
-        nodeCount
-        remaining
-        resetAt
-    }
-    repository(name: $name, owner: $owner) {
-        name
-        ...pullRequests
-    }
+query reviewsQuery($name: String!, $owner: String!, $prCount: Int = 5, $reviewsCount: Int = 5) {
+  rateLimit {
+    limit
+    cost
+    nodeCount
+    remaining
+    resetAt
+  }
+  repository(name: $name, owner: $owner) {
+    name
+    ...pullRequests
+  }
 }
 
 fragment pullRequests on Repository {
-    pullRequests(first: $prCount, states: [OPEN]) {
+  pullRequests(first: $prCount, states: [OPEN]) {
+    nodes {
+      url
+      title
+      isDraft
+      mergeStateStatus
+
+      author {
+        login
+        avatarUrl
+      }
+
+      reviewRequests(first: 1) {
         nodes {
-            author {
-                login
+          requestedReviewer {
+            ... on User {
+              userName: name
             }
-            title
-            reviews(first: $reviewsCount, states: [CHANGES_REQUESTED, APPROVED]) {
-                nodes {
-                    author {
-                        login
-                    }
-                    createdAt
-                    state
-                }
+            ... on Team {
+              teamName: name
             }
+          }
         }
+      }
+      
+      reviews(first: $reviewsCount, states: [CHANGES_REQUESTED, APPROVED]) {
+        nodes {
+          url
+          createdAt
+          state
+          authorAssociation
+
+          author {
+            login
+            avatarUrl
+          }
+
+          onBehalfOf(first: 1) {
+            nodes {
+              login: name
+              avatarUrl
+            }
+          }
+        }
+      }
     }
+  }
 }
 `;
 
