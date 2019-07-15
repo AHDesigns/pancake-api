@@ -57,7 +57,7 @@ fragment pullRequests on Repository {
 
           onBehalfOf(first: 1) {
             nodes {
-              name
+              login: name
               avatarUrl
             }
           }
