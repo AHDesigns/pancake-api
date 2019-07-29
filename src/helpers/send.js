@@ -1,12 +1,22 @@
 const request = require('request');
+const fs = require('fs');
 const log = require('./logger');
 
 module.exports = ({ options, loggable }) => new Promise((resolve, reject) => {
     log.debug(options);
     log.info('request.sending', loggable);
     request(options, (error, response) => {
+        // only locally
         if (error) {
-            reject(new Error('request.error'));
+            // no internet, use fixture locally
+            fs.readFile('fixture.json', { encoding: 'utf8' }, (err, data) => {
+                if (err) {
+                    log.error(err);
+                    reject(new Error('request.error'));
+                } else {
+                    resolve(JSON.parse(data));
+                }
+            });
         } else {
             const { body, headers } = response;
             log.info('request.response', {
@@ -16,9 +26,9 @@ module.exports = ({ options, loggable }) => new Promise((resolve, reject) => {
             log.debug(body);
 
             if (response.statusCode === 200) {
-                if (body.data) { 
-                    console.log(body)
-                    resolve(body.data)
+                if (body.data) {
+                    console.log(body);
+                    resolve(body.data);
                 } else {
                     log.debug(body);
                     reject(new Error('request.no.body'));
