@@ -2,14 +2,14 @@ const send = require('../helpers/send');
 const { gitGQL } = require('../helpers/endpoints');
 const { reviewsQuery } = require('./queries');
 
-module.exports = (req, res, next) => send(gitGQL({
+module.exports = (cache, log) => send(gitGQL({
     query: reviewsQuery,
-    variables: req.body,
+    variables: cache.get(['reviews', 'params']),
 }))
     .then(({ repository, rateLimit }) => {
         const { name, pullRequests: { nodes: prs } } = repository;
 
-        res.json({
+        cache.set(['reviews', 'value'], {
             name,
             pullRequests: prs.map(pr => (
                 {
@@ -24,7 +24,10 @@ module.exports = (req, res, next) => send(gitGQL({
             rateLimit,
         });
     })
-    .catch(next);
+    .catch((e) => {
+        // TODO: do something with this
+        log.error('reviews error', e);
+    });
 
 const reviewStates = {
     PENDING: 'PENDING',

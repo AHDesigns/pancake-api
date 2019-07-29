@@ -1,18 +1,44 @@
 require('dotenv').config();
-const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { port } = require('./helpers/config');
-const reviews = require('./github/reviews');
-const log = require('./helpers/logger');
+const app = require('express')();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
-const app = express();
+const { port } = require('./helpers/config');
+const getReviews = require('./github/reviews');
+const log = require('./helpers/logger');
+const cacheSystem = require('./helpers/cache');
+
+const initialCache = {
+    reviews: {
+        params: {
+            name: 'skyport-graphql',
+            owner: 'sky-uk',
+            prCount: 26,
+            reviewsCount: 10,
+        },
+        value: {},
+    },
+};
+
+const cache = cacheSystem(initialCache);
+
+getReviews(cache);
+
+io.on('connection', (socket) => {
+    log.info('user connected');
+
+    socket.on('reviews', (data) => {
+        log.info('from client', data);
+        log.info('sending cache');
+        socket.emit('reviews', cache.get(['reviews', 'value']));
+    });
+});
+
 
 app.use(bodyParser.json());
 app.use(cors());
-
-// TODO: deal with ddos / greedy clients
-app.post('/reviews', reviews);
 
 app.all('*', (req, res) => {
     log.info('middleware.invalid.route', req.path);
@@ -27,7 +53,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: err.message });
 });
 
-app.listen(port, () => {
+http.listen(port, () => {
     log.info('app.start', {
         port, logLevel: log.level, env: process.env.NODE_ENV,
     });
