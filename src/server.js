@@ -7,22 +7,13 @@ const io = require('socket.io')(http);
 
 const { port } = require('./helpers/config');
 const getReviews = require('./github/reviews');
+const getRepos = require('./repo/get');
+const putRepo = require('./repo/put');
 const log = require('./helpers/logger');
 const cacheSystem = require('./helpers/cache');
+const initialCache = require('./helpers/startupCache');
 
-const initialCache = {
-    reviews: {
-        params: {
-            name: 'skyport-graphql',
-            owner: 'sky-uk',
-            prCount: 26,
-            reviewsCount: 10,
-        },
-        value: {},
-    },
-};
-
-const cache = cacheSystem(initialCache);
+const cache = cacheSystem(initialCache());
 
 getReviews(cache);
 
@@ -32,13 +23,16 @@ io.on('connection', (socket) => {
     socket.on('reviews', (data) => {
         log.info('from client', data);
         log.info('sending cache');
-        socket.emit('reviews', cache.get(['reviews', 'value']));
+        socket.emit('reviews', cache.get(['skyport-graphql', 'value']));
     });
 });
 
 
 app.use(bodyParser.json());
 app.use(cors());
+
+app.get('/repos', getRepos(cache));
+app.put('/repos', putRepo(cache));
 
 app.all('*', (req, res) => {
     log.info('middleware.invalid.route', req.path);

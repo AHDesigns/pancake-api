@@ -9,7 +9,7 @@ module.exports = (cache, log) => send(gitGQL({
     .then(({ repository, rateLimit }) => {
         const { name, pullRequests: { nodes: prs } } = repository;
 
-        cache.set(['reviews', 'value'], {
+        cache.set(['skyport-graphql', 'value'], {
             name,
             pullRequests: prs.map(pr => (
                 {
