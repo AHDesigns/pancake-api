@@ -4,26 +4,52 @@ const cors = require('cors');
 const app = require('express')();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
+const EventEmitter = require('events');
 
 const { port } = require('./helpers/config');
-const getReviews = require('./github/reviews');
 const getRepos = require('./repo/get');
 const putRepo = require('./repo/put');
 const log = require('./helpers/logger');
 const cacheSystem = require('./helpers/cache');
 const initialCache = require('./helpers/startupCache');
+const requester = require('./requester');
 
 const cache = cacheSystem(initialCache());
+const reviewEmitter = new EventEmitter();
+const watchedRepos = {};
 
-getReviews(cache);
+requester({
+    cache, reviewEmitter, log, watchedRepos,
+});
 
 io.on('connection', (socket) => {
+    const id = (Math.random() * 100000).toFixed(0);
+    let userRepos = [];
+
     log.info('user connected');
 
-    socket.on('reviews', (data) => {
-        log.info('from client', data);
-        log.info('sending cache');
-        socket.emit('reviews', cache.get(['skyport-graphql', 'value']));
+    reviewEmitter.on('new-reviews', ({ repo, data }) => {
+        log.info('event found');
+        if (userRepos.includes(repo)) {
+            log.info('event emit');
+            socket.emit('reviews', data);
+        }
+    });
+
+    socket.on('availableRepos', (data) => {
+        log.info('client subscribing to repos', data);
+        userRepos = data;
+        watchedRepos[id] = data;
+        userRepos.forEach(repo => {
+            const repoData = cache.get([repo, 'value'])
+            if (repoData) {
+                socket.emit('reviews', repoData);
+            }
+        });
+    });
+
+    socket.on('disconnect', () => {
+        delete watchedRepos[id];
     });
 });
 
