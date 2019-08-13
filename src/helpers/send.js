@@ -26,8 +26,10 @@ module.exports = ({ options, loggable }) => new Promise((resolve, reject) => {
             log.debug(body);
 
             if (response.statusCode === 200) {
-                if (body.data) {
-                    console.log(body);
+                if (body.errors) {
+                    log.error(body.errors);
+                    reject(new Error('request.remote.errors'));
+                } else if (body.data) {
                     resolve(body.data);
                 } else {
                     log.debug(body);

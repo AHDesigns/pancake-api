@@ -2,9 +2,9 @@ const send = require('../helpers/send');
 const { gitGQL } = require('../helpers/endpoints');
 const { reviewsQuery } = require('./queries');
 
-module.exports = (cache, log) => send(gitGQL({
+module.exports = (cache, repo, cb) => send(gitGQL({
     query: reviewsQuery,
-    variables: cache.get(['reviews', 'params']),
+    variables: cache.get([repo, 'params']),
 }))
     .then(({ repository, rateLimit }) => {
         const { name, pullRequests: { nodes: prs } } = repository;
@@ -23,11 +23,9 @@ module.exports = (cache, log) => send(gitGQL({
             )),
             rateLimit,
         });
+        cb();
     })
-    .catch((e) => {
-        // TODO: do something with this
-        log.error('reviews error', e);
-    });
+    .catch(() => {});
 
 const reviewStates = {
     PENDING: 'PENDING',
@@ -50,7 +48,7 @@ function calcReviewState(rawReviews) {
                 .find(({ author }) => author.login === review.author.login);
 
             if (!hasAlreadyReviewed) {
-            // TODO: authorAssociation NONE should be removed (as they have left sky)
+            // TODO: authorAssociation NONE should be removed (as they have left the org)
                 allReviews.push({
                     ...review,
                     onBehalfOf: review.onBehalfOf.nodes[0],
