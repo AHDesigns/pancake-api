@@ -24,6 +24,9 @@ fragment pullRequests on Repository {
       title
       isDraft
       mergeStateStatus
+      mergeable
+
+      ...commits
 
       author {
         login
@@ -42,7 +45,7 @@ fragment pullRequests on Repository {
           }
         }
       }
-      
+
       reviews(first: $reviewsCount, states: [CHANGES_REQUESTED, APPROVED]) {
         nodes {
           url
@@ -61,6 +64,25 @@ fragment pullRequests on Repository {
               avatarUrl
             }
           }
+        }
+      }
+    }
+  }
+}
+
+fragment commits on PullRequest {
+  commits(last: 1) {
+    nodes {
+      commit {
+        commitUrl
+        message
+        status {
+          contexts {
+            description
+            avatarUrl
+            state
+          }
+          state
         }
       }
     }
