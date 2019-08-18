@@ -2,30 +2,31 @@ const send = require('../helpers/send');
 const { gitGQL } = require('../helpers/endpoints');
 const { reviewsQuery } = require('./queries');
 
-module.exports = (cache, repo, cb) => send(gitGQL({
-    query: reviewsQuery,
-    variables: cache.get([repo, 'params']),
-}))
-    .then(({ repository, rateLimit }) => {
-        const { name, pullRequests: { nodes: prs } } = repository;
+module.exports = (repo, params) => new Promise((resolve, reject) => {
+    send(gitGQL({
+        query: reviewsQuery,
+        variables: params,
+    }))
+        .then(({ repository, rateLimit }) => {
+            const { name, pullRequests: { nodes: prs } } = repository;
 
-        cache.set(['skyport-graphql', 'value'], {
-            name,
-            pullRequests: prs.map(pr => (
-                {
-                    title: pr.title,
-                    isDraft: pr.isDraft,
-                    isFailing: pr.mergeStateStatus !== 'BEHIND',
-                    url: pr.url,
-                    author: pr.author,
-                    reviews: calcReviewState(pr.reviews.nodes),
-                }
-            )),
-            rateLimit,
+            resolve({
+                name,
+                pullRequests: prs.map(pr => (
+                    {
+                        ...pr,
+                        reviews: calcReviewState(pr.reviews.nodes),
+                        statuses: pr.commits.nodes[0].commit,
+                    }
+                )),
+                rateLimit,
+            });
+        })
+        .catch(() => {
+            // maybe want to do something with this
+            reject();
         });
-        cb();
-    })
-    .catch(() => {});
+});
 
 const reviewStates = {
     PENDING: 'PENDING',
