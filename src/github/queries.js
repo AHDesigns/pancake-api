@@ -3,7 +3,7 @@ const gql = str => str[0].replace(/\n/g, '').replace(/ +/g, ' ');
 // TODO: deal with reviewRequests needing variable
 // TODO: deal with onBahalfOf needing variable
 const reviewsQuery = gql`
-query reviewsQuery($name: String!, $owner: String!, $prCount: Int = 5, $reviewsCount: Int = 5) {
+query reviewsQuery($name: String!, $owner: String!, $prCount: Int = 5, $reviewsCount: Int = 5, $after: String) {
   rateLimit {
     limit
     cost
@@ -18,8 +18,15 @@ query reviewsQuery($name: String!, $owner: String!, $prCount: Int = 5, $reviewsC
 }
 
 fragment pullRequests on Repository {
-  pullRequests(first: $prCount, states: [OPEN]) {
+  pullRequests(first: $prCount, states: [OPEN], after: $after) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+
     nodes {
+      id
+      createdAt
       url
       title
       isDraft
@@ -38,9 +45,11 @@ fragment pullRequests on Repository {
           requestedReviewer {
             ... on User {
               userName: name
+              avatarUrl
             }
             ... on Team {
               teamName: name
+              avatarUrl
             }
           }
         }

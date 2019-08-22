@@ -3,16 +3,12 @@ const { gitGQL } = require('../helpers/endpoints');
 const { reviewsQuery } = require('./queries');
 
 module.exports = (repo, params) => new Promise((resolve, reject) => {
-    send(gitGQL({
-        query: reviewsQuery,
-        variables: params,
-    }))
-        .then(({ repository, rateLimit }) => {
-            const { name, pullRequests: { nodes: prs } } = repository;
-
+    getAllReviews()
+        .then(({ name, rateLimit, prs }) => {
             resolve({
                 name,
-                pullRequests: prs.map(pr => (
+                // reversed to put newest pr's at top
+                pullRequests: prs.reverse().map(pr => (
                     {
                         ...pr,
                         reviews: calcReviewState(pr.reviews.nodes),
@@ -22,11 +18,24 @@ module.exports = (repo, params) => new Promise((resolve, reject) => {
                 rateLimit,
             });
         })
-        .catch(() => {
-            // maybe want to do something with this
-            reject();
-        });
+        .catch(() => { reject(); });
+
+    async function getAllReviews(allPrs = [], after) {
+        const { repository, rateLimit } = await send(gitGQL({
+            query: reviewsQuery,
+            variables: { ...params, ...(after && after) },
+        }));
+
+        const { name, pullRequests: { pageInfo, nodes } } = repository;
+
+        const prs = allPrs.concat(nodes);
+
+        return pageInfo.hasNextPage
+            ? getAllReviews(prs, { after: pageInfo.endCursor })
+            : { name, rateLimit, prs };
+    }
 });
+
 
 const reviewStates = {
     PENDING: 'PENDING',
