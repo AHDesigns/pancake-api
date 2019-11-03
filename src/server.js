@@ -7,6 +7,8 @@ const io = require('socket.io')(http);
 const EventEmitter = require('events');
 
 const { port, env } = require('./helpers/config');
+const getPrHistory = require('./github/prHistory');
+const getUsers = require('./github/getUsers');
 const getRepos = require('./repo/get');
 const putRepo = require('./repo/put');
 const log = require('./helpers/logger');
@@ -37,11 +39,9 @@ io.on('connection', (socket) => {
     log.info(`user ${id} connected`);
     log.info('watched: ', watchedRepos);
 
-    reviewEmitter.on('new-reviews', ({ repo, data }) => {
-        if (userRepos.includes(repo)) {
-            log.info(`user ${id} recieved data for repo ${repo}`);
-            socket.emit('reviews', data);
-        }
+
+    socket.on('connected', () => {
+        socket.emit('connected', { id });
     });
 
     socket.on('availableRepos', (data) => {
@@ -56,18 +56,32 @@ io.on('connection', (socket) => {
         });
     });
 
+    reviewEmitter.on('new-reviews', updateReviews);
+
     socket.on('disconnect', () => {
         log.info(`user ${id} disconnected`);
+        reviewEmitter.removeListener('new-reviews', updateReviews);
         delete watchedRepos[id];
     });
+
+    function updateReviews({ repo, data }) {
+        if (userRepos.includes(repo)) {
+            log.info(`user ${id} recieved data for repo ${repo}`);
+            socket.emit('reviews', data);
+        }
+    }
 });
 
 
 app.use(bodyParser.json());
 app.use(cors());
 
+app.put('/users', getUsers);
+
 app.get('/repos', getRepos(cache));
 app.put('/repos', putRepo(cache));
+
+app.put('/pr-history', getPrHistory);
 
 app.all('*', (req, res) => {
     log.info('middleware.invalid.route', req.path);
